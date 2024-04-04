@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './chatroom.css';
 import Message from './message.js';
-//import translateText from './translate'
+import translateText from './translate'
 import translateTextAPI from './translateAPI'
 import { addChat, useGlobalState } from '../store/state';
+
 
 const Chatroom = (props) => {
 
@@ -12,10 +13,12 @@ const Chatroom = (props) => {
     const [newMessage, setNewMessage] = useState("");
     const [languageTranslate] = useGlobalState('languageTranslate');
     const [languageOptions] = useGlobalState('languageOptions');
-    const agentUsername = 'AGENT';
+    const agentUsername = "AGENT";
     const messageEl = useRef(null);
     const input = useRef(null);
-    
+    const [selectedLanguage, setSelectedLanguage] = useState('');
+
+
     function getKeyByValue(object) {
         let obj = languageTranslate.find(o => o.contactId === currentContactId[0]);
         if(obj === undefined) {
@@ -32,8 +35,10 @@ const Chatroom = (props) => {
             message: content
         });
         const { AbsoluteTime, Id } = awsSdkResponse.data;
-        console.log(AbsoluteTime, Id);
     }
+     const handleChange = (event) => {
+    setSelectedLanguage(event.target.value);
+  };
 
     useEffect(() => {
 
@@ -56,19 +61,17 @@ const Chatroom = (props) => {
             return;
         }
         let destLang = languageTranslate.find(o => o.contactId === currentContactId[0]);
-        console.log("destLang: ", destLang);
 
-        // translate the agent message  ** Swap the below two round if you wnat to test custom termonologies **
+        // translate the agent message  * Swap the below two round if you wnat to test custom termonologies *
         // let translatedMessage = await translateText(newMessage, 'en', destLang.lang);
 
-        /***********************************CUSTOM TERMINOLOGY*************************************************    
+        /************CUSTOM TERMINOLOGY****************    
          
             To support custom terminologies comment out the line above, and uncomment the below 2 lines 
          
-         ******************************************************************************************************/
-        console.log(newMessage);
-        let translatedMessageAPI = await translateTextAPI(newMessage, 'en', destLang.lang); // Provide a custom terminology created outside of this deployment
-        //let translatedMessageAPI = await translateTextAPI(newMessage, 'en', destLang.lang, ['connectChatTranslate']); // Provide a custom terminology created outside of this deployment
+         **********************************/
+        
+        let translatedMessageAPI = await translateTextAPI(newMessage, 'en', selectedLanguage, ['connectChatTranslate']); // Provide a custom terminology created outside of this deployment
         let translatedMessage = translatedMessageAPI.TranslatedText
 
         console.log(` Original Message: ` + newMessage + `\n Translated Message: ` + translatedMessage);
@@ -107,7 +110,14 @@ const Chatroom = (props) => {
 
     return (
         <div className="chatroom">
-                <h3>Translate - ({languageTranslate.map(lang => {if(lang.contactId === currentContactId[0])return lang.lang})}) {getKeyByValue(languageOptions)}</h3>
+         
+                <h3>   <label htmlFor="language-select">Choose:</label>
+      <select id="language-select" value={selectedLanguage} onChange={handleChange}>
+        <option value="">Select a language</option>
+        <option value="fr">French</option>
+        <option value="ja">Japanese</option>
+      </select>
+        Translate - ({languageTranslate.map(lang => {if(lang.contactId === currentContactId[0])return lang.lang})}) {getKeyByValue(languageOptions)}</h3>
                 <ul className="chats" ref={messageEl}>
                 {
                         // iterate over the Chats, and only display the messages for the currently active chat session
