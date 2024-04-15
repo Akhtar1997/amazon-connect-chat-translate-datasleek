@@ -1,5 +1,5 @@
 import { Amplify }  from '@aws-amplify/core';
-// import { withAuthenticator } from '@aws-amplify/ui-react';
+import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import awsconfig from './aws-exports';
 import React, { useState, useEffect } from 'react';
@@ -8,20 +8,28 @@ import 'semantic-ui-less/semantic.less';
 import Ccp from './components/ccp';
 //import { autoSignIn } from '@aws-amplify/auth';
 
-
-// import Auth from "@aws-amplify/auth";
-// import { AmplifySignOut, withAuthenticator } from '@aws-amplify/ui-react';
-
-
-
 // Component
-function App() { 
+function App({ signOut, user }) {
+  const [isConfigured, setIsConfigured] = useState(false);
+  
+  useEffect(() => {
+    configureAuth();
+    //signedIn();
+  }, []);
+
+  const configureAuth = () => {
+    Amplify.configure(awsconfig);
+    setIsConfigured(true);
+  };
+  //const signedIn = async () => {
+    //await autoSignIn();
+  //};
 
   return (
-                     <div className="App">
-                        <Ccp />
-                     </div>
-              );
+    <div className="App">
+      {isConfigured && <Ccp user={user} signOut={signOut} />}
+    </div>
+  );
 }
 
-export default App;
+export default withAuthenticator(App);
